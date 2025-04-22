@@ -1,85 +1,104 @@
-# Pidog
+🐶 RescueDog — Autonomous Search & SLAM Robot
+RescueDog is a Raspberry Pi-powered quadruped robot that combines real-time video streaming, human detection, autonomous movement, and SLAM mapping. It’s designed to assist in search and rescue environments by detecting humans and mapping unknown terrain using ultrasonic sensors.
 
-Pidog Python library for Raspberry Pi.
+🚀 Features
+📸 Live Camera Feed via web interface
 
-Quick Links:
+👤 Human Detection with MobileNetSSD (OpenCV DNN)
 
-- [Pidog](#pidog)
-  - [Docs](#docs)
-  - [Installation](#installation)
-  - [About SunFounder](#about-sunfounder)
-  - [Contact us](#contact-us)
-  - [Credit](#credit)
+🗺️ SLAM Mapping using head-mounted ultrasonic sweeps
 
-----------------------------------------------
+🐾 Autonomous Patrol Mode with real-time obstacle detection
 
-## Docs
+🎮 Manual Control via web interface
 
-- <https://docs.sunfounder.com/projects/pidog/en/latest/>
+💾 Snapshot Saving on human detection
 
-----------------------------------------------
+🔴 Flashing Alert Dot in UI when human is detected
 
-## Installation
+⚙️ Expandable with Google Drive or return-home mode
 
-- <https://docs.sunfounder.com/projects/pidog/en/latest/python/python_start/install_all_modules.html>
+📦 Folder Structure
+bash
+Copy code
+RescueDog/
+├── app.py                   # Flask app
+├── modules/                # All functional logic
+│   ├── camera.py           # Camera stream + human detection
+│   ├── detection.py        # MobileNetSSD detection logic
+│   ├── pidog_control.py    # Manual controls for PiDog
+│   ├── autonomous.py       # Patrol and obstacle avoidance logic
+│   └── slam.py             # SLAM grid mapping
+├── snapshots/              # Saved image captures
+├── templates/
+│   └── index.html          # Web frontend
+├── models/                 # MobileNetSSD .prototxt and .caffemodel
+└── README.md
+🛠️ Installation
+Prerequisites:
+Raspberry Pi OS (Bookworm recommended)
 
-### install tool
+PiDog robot installed and tested
 
-```bash
-sudo apt install git python3-pip python3-setuptools python3-smbus
-```
+Python 3.9+
 
-### robot-hat library
+OpenCV (with DNN support)
 
-```bash
-cd ~/
-git clone -b v2.0 https://github.com/sunfounder/robot-hat.git
-cd robot-hat
-sudo python3 setup.py install
+Flask
 
-```
+PyCamera2
 
-### vilib library
+Setup:
+bash
+Copy code
+sudo apt update
+sudo apt install python3-opencv libatlas-base-dev
+pip install flask picamera2
+Also ensure your MobileNetSSD files are inside models/:
 
-```bash
-cd ~/
-git clone -b picamera2 https://github.com/sunfounder/vilib.git
-cd vilib
-sudo python3 install.py
-```
+MobileNetSSD_deploy.prototxt
 
-### pidog library
+MobileNetSSD_deploy.caffemodel
 
-```bash
-cd ~/
-git clone https://github.com/sunfounder/pidog.git
-cd pidog
-sudo python3 setup.py install
-```
+▶️ Running the App
+From your project directory:
 
-### i2samp
+bash
+Copy code
+python3 app.py
+Open the web UI in your browser:
 
-```
-cd ~/pidog
-sudo bash i2samp.sh
-```
+cpp
+Copy code
+http://<your-pi-ip>:5000
+Example: http://192.168.137.213:5000
 
-----------------------------------------------
+🧠 Web Interface
+🔴 Red alert = human detected
 
-## About SunFounder
+👀 Live video from PiCamera2
 
-SunFounder is a technology company focused on Raspberry Pi and Arduino open source community development. Committed to the promotion of open source culture, we strives to bring the fun of electronics making to people all around the world and enable everyone to be a maker. Our products include learning kits, development boards, robots, sensor modules and development tools. In addition to high quality products, SunFounder also offers video tutorials to help you make your own project. If you have interest in open source or making something cool, welcome to join us!
+🗺️ SLAM map updates in real time
 
-----------------------------------------------
+🎮 Controls: Forward, Left, Right, Backward, Autonomous (Trot)
 
-## Contact us
+📸 Snapshots are saved when a person is detected
 
-website:
-    www.sunfounder.com
+📸 Snapshot Access
+Browse saved images from:
 
-E-mail:
-    service@sunfounder.com, support@sunfounder.com
+arduino
+Copy code
+http://<your-pi-ip>:5000/snapshots
+🧪 Future Ideas
+🔋 Live battery and CPU monitoring
 
-## Credit
+☁️ Cloud uploads (Google Drive, S3)
 
-Most sound effect are from [Zapsplat.com](https://www.zapsplat.com)
+🔁 Return to base functionality
+
+🎙️ Voice or gesture-based commands
+
+🤝 Credits
+Built with 💡 by Nansubuga Diana
+Based on the Sunfounder PiDog SDK
