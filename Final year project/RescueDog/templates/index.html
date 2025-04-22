@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RescueDog Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #121212; color: white; }
+    header { display: flex; justify-content: space-between; align-items: center; background: #1e1e1e; padding: 10px 20px; }
+    .status { display: flex; gap: 15px; align-items: center; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: red; }
+    main { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+    .feed, .map { flex: 1 1 45%; }
+    @media (max-width: 768px) {
+      .feed, .map { flex: 1 1 100%; }
+    }
+    .controls {
+      display: grid;
+      grid-template-areas:
+        ". forward ."
+        "left auto right"
+        ". backward .";
+      justify-content: center;
+      gap: 10px;
+      margin: 20px auto;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 50%;
+      background: #444;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>🐶 RescueDog</div>
+    <div class="status">
+      <div class="dot" id="alertDot"></div>
+      <span id="state">State: Manual</span>
+      <span id="cpu">CPU: --%</span>
+      <span id="battery">Battery: N/A</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="feed">
+      <img src="/video_feed" width="100%">
+    </div>
+    <div class="map">
+      <pre id="slamMap"></pre>
+    </div>
+  </main>
+
+  <div class="controls">
+    <button style="grid-area: forward;" onclick="move('forward')">↑</button>
+    <button style="grid-area: left;" onclick="move('left')">←</button>
+    <button style="grid-area: auto;" onclick="move('trot')">⚙</button>
+    <button style="grid-area: right;" onclick="move('right')">→</button>
+    <button style="grid-area: backward;" onclick="move('backward')">↓</button>
+  </div>
+
+  <script>
+    function move(action) {
+      fetch(`/action/${action}`, { method: "POST" });
+    }
+
+    function updateStatus() {
+      fetch('/status').then(res => res.json()).then(data => {
+        document.getElementById('cpu').innerText = `CPU: ${data.cpu}%`;
+        document.getElementById('battery').innerText = `Battery: ${data.battery}`;
+        document.getElementById('state').innerText = `State: ${data.state}`;
+      });
+      fetch('/human_status').then(res => res.json()).then(data => {
+        document.getElementById('alertDot').style.background = data.alert ? 'red' : 'gray';
+      });
+      fetch('/slam_map').then(res => res.json()).then(data => {
+        document.getElementById('slamMap').innerText = data.map;
+      });
+    }
+
+    setInterval(updateStatus, 2000);
+  </script>
+</body>
+</html>

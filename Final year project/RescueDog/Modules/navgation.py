@@ -4,14 +4,16 @@ from queue import PriorityQueue
 from pidog import Pidog
 from modules.pidog_control import do_function
 
+# SLAM and Grid Setup
 GRID_SIZE = 41
 GRID_CENTER = GRID_SIZE // 2
 grid_map = [['.' for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 robot_pos = [GRID_CENTER, GRID_CENTER]
-latest_path = []
+robot_facing = 0  # Degrees, 0 = facing forward (Y−)
 
+# Obstacle Mapping
 def update_obstacle(angle_deg, distance_cm):
-    angle_rad = math.radians(angle_deg)
+    angle_rad = math.radians(angle_deg + robot_facing)
     distance_m = distance_cm / 100.0
     x_offset = distance_m * math.cos(angle_rad)
     y_offset = -distance_m * math.sin(angle_rad)
@@ -22,15 +24,7 @@ def update_obstacle(angle_deg, distance_cm):
     if 0 <= gx < GRID_SIZE and 0 <= gy < GRID_SIZE:
         grid_map[gy][gx] = '#'
 
-def scan_with_ultrasonic(dog):
-    for angle in range(-90, 91, 15):
-        dog.head_move([[angle, 0, 0]], immediately=True, speed=60)
-        time.sleep(0.2)
-        dist = round(dog.ultrasonic.read_distance(), 2)
-        if 3 < dist < 250:
-            update_obstacle(angle, dist)
-    dog.head_move([[0, 0, 0]], immediately=True)
-
+# A* Pathfinding
 def neighbors(pos):
     x, y = pos
     directions = [(-1,0),(1,0),(0,-1),(0,1)]
@@ -42,7 +36,7 @@ def neighbors(pos):
     return result
 
 def heuristic(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+    return abs(a[0]-b[0]) + abs(a[1]-b[1])
 
 def a_star(start, goal):
     frontier = PriorityQueue()
@@ -70,6 +64,16 @@ def a_star(start, goal):
     path.reverse()
     return path
 
+# Movement + SLAM scan
+def scan_with_ultrasonic(dog):
+    for angle in range(-90, 91, 15):
+        dog.head_move([[angle, 0, 0]], immediately=True, speed=50)
+        time.sleep(0.2)
+        dist = round(dog.ultrasonic.read_distance(), 2)
+        if 3 < dist < 250:
+            update_obstacle(angle, dist)
+    dog.head_move([[0, 0, 0]], immediately=True)
+
 def move_to(target):
     global robot_pos
     dx = target[0] - robot_pos[0]
@@ -84,12 +88,14 @@ def move_to(target):
         do_function("forward")
     robot_pos = list(target)
 
+# Autonomous Logic
+latest_path = []
 def start_autonomous_mode():
     global latest_path
     dog = Pidog()
     scan_with_ultrasonic(dog)
 
-    goal = [robot_pos[0] + 5, robot_pos[1]]
+    goal = [robot_pos[0] + 5, robot_pos[1]]  # Move 5 cells forward
     path = a_star(tuple(robot_pos), tuple(goal))
 
     if not path:
@@ -108,11 +114,4 @@ def latest_path_data():
         "path": latest_path,
         "robot": tuple(robot_pos),
         "map": ["".join(row) for row in grid_map]
-    }
-
-def get_latest_map():
-    return {
-        "map": ["".join(row) for row in grid_map],
-        "robot": tuple(robot_pos),
-        "path": latest_path
     }
